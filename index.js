@@ -1,5 +1,14 @@
 const express = require('express');
 const exphbs  = require('express-handlebars');
+const pg = require("pg");
+const FruitBasket = require("./fruit-basket-service");
+const Pool = pg.Pool;
+require('dotenv').config()
+
+const connectionString = process.env.DATABASE_URL ||  'postgresql://matome:pg123@localhost:5433/fruitsbasket';  // your database URL here
+const pool = new Pool({
+    connectionString
+});
 
 const app = express();
 const PORT =  process.env.PORT || 3017;
@@ -20,9 +29,12 @@ app.set('view engine', 'handlebars');
 
 let counter = 0;
 
-app.get('/', function(req, res) {
+app.get('/', async function(req, res) {
+
+	const baskets = await fruitBasket.listBasket()
+
 	res.render('index', {
-		counter
+		baskets
 	});
 });
 
@@ -34,10 +46,11 @@ app.get('/basket/edit', function(req, res) {
 	res.render('basket/edit');
 });
 
-// app.post('/count', function(req, res) {
-// 	counter++;
-// 	res.redirect('/')
-// });
+app.post('/basket/add', function(req, res) {
+	console.log(req.body);
+	fruitBasket.creatBasket(req.body.basket_name);
+	res.redirect('/')
+});
 
 
 // start  the server and start listening for HTTP request on the PORT number specified...
